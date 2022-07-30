@@ -82,7 +82,7 @@ const matchData = async (req, res) => {
                 })
             })
 
-            let miniGoles = []
+            let golesDetalles = []
 
             goles.each((i, el) => {
                 const golLocalJugador = $(el).find('.mhr-name').first().text()
@@ -91,7 +91,7 @@ const matchData = async (req, res) => {
                 const golVisitanteTiempo = $(el).find('.mhr-min').last().text()
                 const resultadoParcial = $(el).find('.mhr-marker div').text()
 
-                miniGoles.push({
+                golesDetalles.push({
                     golLocalJugador,
                     golLocalTiempo,
                     golVisitanteJugador,
@@ -159,7 +159,7 @@ const matchData = async (req, res) => {
                 golVisitante: golVisitante,
                 idPartido: `${local}-${visitante}`,
                 date: date,
-                miniGoles: miniGoles,
+                golesDetalles: golesDetalles,
                 tiempo: tiempo,
                 fecha: fecha.slice(8)
             }
