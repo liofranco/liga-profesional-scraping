@@ -5,7 +5,8 @@ const matchData = async (req, res) => {
     let local = req.params.local;
     let visitante = req.params.visitante;
     let partidoId = req.params.partidoId;
-    axios.get(`https://www.resultados-futbol.com/${partidoId}/${local}/${visitante}`)
+    let year = req.params.year
+    axios.get(`https://www.resultados-futbol.com/${partidoId}/${local}/${visitante}/${year}`)
         .then((response) => {
             const $ = cheerio.load(response.data)
             const alineacionLocal = $('.alineaciones .campo1 .local #dreamteam1')

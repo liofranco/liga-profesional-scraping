@@ -20,7 +20,7 @@ app.use((req,res,next) => {
 
 app.get('/api', homeData)
 app.get('/api/round/:round', roundData)
-app.get('/api/:partidoId/:local/:visitante', matchData)
+app.get('/api/:partidoId/:local/:visitante/:year', matchData)
 
 app.listen(PORT, () => {
     console.log(`Server run on port ${PORT}`)
