@@ -1,12 +1,13 @@
 import * as cheerio from "cheerio";
 import axios from "axios";
+import { teams } from "../teams.js";
 
 const matchData = async (req, res) => {
     let local = req.params.local;
     let visitante = req.params.visitante;
     let partidoId = req.params.partidoId;
-    let year = req.params.year
-    axios.get(`https://www.resultados-futbol.com/${partidoId}/${local}/${visitante}/${year}`)
+    /* let year = req.params.year */
+    axios.get(`https://www.resultados-futbol.com/${partidoId}/${local}/${visitante}`)
         .then((response) => {
             const $ = cheerio.load(response.data)
             const alineacionLocal = $('.alineaciones .campo1 .local #dreamteam1')
@@ -26,16 +27,18 @@ const matchData = async (req, res) => {
             const suplentesVisitanteContainer = $('#tab_match_teams .team2 .aligns-list-container .aligns-list').last()
             const suplentesVisitante = suplentesVisitanteContainer.find('li')
             const estadisticasData = $('#box-tabla .contentitem table tbody tr')
+            const teamHome = teams.find(t => t.name === local)
+            const teamAway = teams.find(t => t.name === visitante)
 
-            let estadisticas = []
+            let statistics = []
             estadisticasData.each((i,el) => {
-                const dato1 = $(el).find('td').first().text()
-                const dato2 = $(el).find('td').last().text()
-                const nombreDato = $(el).find('td h6').text()
-                estadisticas.push({
-                    nombreDato,
-                    dato1,
-                    dato2
+                const home = $(el).find('td').first().text()
+                const away = $(el).find('td').last().text()
+                const type = $(el).find('td h6').text()
+                statistics.push({
+                    type,
+                    home,
+                    away
                 }) 
             })
 
@@ -56,9 +59,9 @@ const matchData = async (req, res) => {
                     })
                 })
                 supLocal.push({
-                    nombre,
-                    numero,
-                    evtPlayer
+                    player:nombre,
+                    number: numero,
+                    events: evtPlayer
                 })
             })
 
@@ -76,9 +79,9 @@ const matchData = async (req, res) => {
                     })
                 })
                 supVisitante.push({
-                    nombre,
-                    numero,
-                    evtPlayer
+                    player:nombre,
+                    number: numero,
+                    events: evtPlayer
                 })
             })
 
@@ -89,14 +92,18 @@ const matchData = async (req, res) => {
                 const golLocalTiempo = $(el).find('.mhr-min').first().text()
                 const golVisitanteJugador = $(el).find('.mhr-name').last().text()
                 const golVisitanteTiempo = $(el).find('.mhr-min').last().text()
-                const resultadoParcial = $(el).find('.mhr-marker div').text()
+                const score = $(el).find('.mhr-marker div').text()
 
                 golesDetalles.push({
-                    golLocalJugador,
-                    golLocalTiempo,
-                    golVisitanteJugador,
-                    golVisitanteTiempo,
-                    resultadoParcial
+                    home: {
+                        player: golLocalJugador,
+                        time: golLocalTiempo
+                    },
+                    away: {
+                        player: golVisitanteJugador,
+                        time: golVisitanteTiempo
+                    },
+                    score
                 })
             })
 
@@ -107,50 +114,54 @@ const matchData = async (req, res) => {
             let equipoVisitante = []
 
             alineacionLocal.each((i,el) => {
-                const clase = $(el).attr('class')
-                const jugador = $(el).attr('title')
-                const img = $(el).find('a img').attr('src')
-                const num = $(el).find('.num').text()
-                const eventos = $(el).find('.align-events span')
+                const grid = $(el).attr('class')
+                const player = $(el).attr('title')
+                const img = $(el).find('a img').attr('src').slice(0,-11)
+                const number = $(el).find('.num').text()
+                const background = $(el).find('.num').attr('style').slice(17)
+                const events = $(el).find('.align-events span')
                 let eventosPlayer = []
-                if(eventos.length > 0){
-                    eventos.each((i,el) => {
+                if(events.length > 0){
+                    events.each((i,el) => {
                         const evento = $(el).attr('class')
                         eventosPlayer.push({img: evento})
                     })
                 }
                 equipoLocal.push({
-                    jugador,
+                    player,
                     img,
-                    clase,
-                    num,
-                    eventos: eventosPlayer
+                    grid,
+                    number,
+                    background,
+                    events: eventosPlayer
                 })})
             
             alineacionVisitante.each((i,el) => {
-                const clase = $(el).attr('class')
-                const jugador = $(el).attr('title')
-                const img = $(el).find('a img').attr('src')
-                const num = $(el).find('.num').text()
-                const eventos = $(el).find('.align-events span')
+                const grid = $(el).attr('class')
+                const player = $(el).attr('title')
+                const img = $(el).find('a img').attr('src').slice(0,-11)
+                const number = $(el).find('.num').text()
+                const background = $(el).find('.num').attr('style').slice(17)
+                const events = $(el).find('.align-events span')
                 let eventosPlayer = []
-                if(eventos.length > 0){
-                    eventos.each((i,el) => {
+                if(events.length > 0){
+                    events.each((i,el) => {
                         const evento = $(el).attr('class')
                         eventosPlayer.push({img: evento})
                     })
                 }
                 equipoVisitante.push({
-                    jugador,
+                    player,
                     img,
-                    clase,
-                    num,
-                    eventos: eventosPlayer
+                    grid,
+                    number,
+                    background,
+                    events: eventosPlayer
                 })})
 
             alineaciones.push(equipoLocal, equipoVisitante)
 
-            let partido = {
+            /* let partido = {
                 local: local,
                 visitante: visitante,
                 localEscudo: localEscudo,
@@ -162,15 +173,49 @@ const matchData = async (req, res) => {
                 golesDetalles: golesDetalles,
                 tiempo: tiempo,
                 fecha: fecha.slice(8)
+            } */
+
+            let partido = {
+                id: `23${fecha.slice(8)}${teamHome.id}${teamAway.id}`,
+                date: date,
+                round: fecha.slice(8),
+                status: tiempo,
+                teams: {
+                    home: {
+                        id: teamHome.id,
+                        name: local,
+                        code: teamHome.code,
+                        logo: localEscudo
+                    },
+                    away: {
+                        id: teamAway.id,
+                        name: visitante,
+                        code: teamAway.code,
+                        logo: visitanteEscudo                       
+                    }
+                },
+                goals:{
+                    home: golLocal,
+                    away: golVisitante
+                },
+                stadium: teamHome.stadium,
+                events: golesDetalles
             }
 
             res.send({
                 status: "success",
-                alineaciones,
                 partido,
-                supLocal,
-                supVisitante,
-                estadisticas
+                lineups: {
+                    home: {
+                        initial: equipoLocal,
+                        substitutes: supLocal
+                    },
+                    away: {
+                        initial: equipoVisitante,
+                        substitutes: supVisitante
+                    }
+                },
+                statistics
             })
 
         }).catch(err => console.error(err) );

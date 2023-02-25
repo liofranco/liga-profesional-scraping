@@ -1,6 +1,7 @@
 import express from "express";
-import { homeData, roundData } from "./controllers/resultadosController.js";
+import { homeData, roundData, currentRound, teamsList } from "./controllers/resultadosController.js";
 import { matchData } from "./controllers/matchController.js";
+import { homeInfo, newsData } from "./controllers/newsController.js";
 
 const app = express();
 app.use(express.json());
@@ -17,10 +18,15 @@ app.use((req,res,next) => {
         res.send()
     })
 })
+app.use('/public/images/stadium', express.static('public/images/stadium'))
 
 app.get('/api', homeData)
+app.get('/api/home', homeInfo)
+app.get('/api/news', newsData)
+app.get('/api/teams', teamsList)
 app.get('/api/round/:round', roundData)
-app.get('/api/:partidoId/:local/:visitante/:year', matchData)
+app.get('/api/current', currentRound)
+app.get('/api/:partidoId/:local/:visitante', matchData)
 
 app.listen(PORT, () => {
     console.log(`Server run on port ${PORT}`)
