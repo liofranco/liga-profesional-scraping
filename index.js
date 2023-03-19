@@ -1,7 +1,7 @@
 import express from "express";
 import { homeData, roundData, currentRound, teamsList } from "./controllers/resultadosController.js";
 import { matchData } from "./controllers/matchController.js";
-import { homeInfo, newsData } from "./controllers/newsController.js";
+import { homeInfo, newsData, postData } from "./controllers/newsController.js";
 
 const app = express();
 app.use(express.json());
@@ -23,6 +23,7 @@ app.use('/public/images/stadium', express.static('public/images/stadium'))
 app.get('/api', homeData)
 app.get('/api/home', homeInfo)
 app.get('/api/news', newsData)
+app.get('/api/news/:section/:year/:month/:day/:post', postData)
 app.get('/api/teams', teamsList)
 app.get('/api/round/:round', roundData)
 app.get('/api/current', currentRound)

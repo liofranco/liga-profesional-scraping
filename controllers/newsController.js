@@ -1,8 +1,8 @@
 import * as cheerio from "cheerio";
 import axios from "axios";
 
-const homeInfo = (req,res) => {
-    axios.get(`https://www.ligaprofesional.ar/`) 
+const homeInfo = (req, res) => {
+    axios.get(`https://www.ligaprofesional.ar/`)
         .then(response => {
             const $ = cheerio.load(response.data)
             const mainLeftLink = $('.mvp-body-sec-wrap #mvp-feat3-wrap .mvp-feat3-left a').attr('href')
@@ -13,7 +13,7 @@ const homeInfo = (req,res) => {
 
             res.send({
                 status: "success",
-                main:{
+                main: {
                     title: mainLeftTextTitle,
                     subtitle: mainLeftTextSubtitle,
                     tag: mainLeftTextCat,
@@ -22,17 +22,17 @@ const homeInfo = (req,res) => {
                 }
             })
 
-    }).catch(err => console.error(err) )    
+        }).catch(err => console.error(err))
 }
 
-const newsData = (req,res) => {
-    axios.get(`https://www.ligaprofesional.ar/noticias`) 
+const newsData = (req, res) => {
+    axios.get(`https://www.ligaprofesional.ar/noticias`)
         .then(response => {
             const $ = cheerio.load(response.data)
             const main = $('.mvp-main-body-blog .mvp-main-blog-wrap .mvp-blog-story-wrap')
 
             let news = []
-            main.each((i,el) => {
+            main.each((i, el) => {
                 const link = $(el).find('a').attr('href')
                 const img = $(el).find('a .mvp-blog-story-img img').attr('src')
                 const tag = $(el).find('.mvp-blog-story-text .mvp-post-info-top h3 a').text()
@@ -52,7 +52,43 @@ const newsData = (req,res) => {
                 news
             })
 
-    }).catch(err => console.error(err) )
+        }).catch(err => console.error(err))
 }
 
-export {homeInfo, newsData}
+const postData = (req, res) => {
+    let section = req.params.section
+    let year = req.params.year
+    let month = req.params.month
+    let day = req.params.day
+    let post = req.params.post
+    axios.get(`https://www.ligaprofesional.ar/notas/${section}/${year}/${month}/${day}/${post}`)
+        .then(response => {
+            const $ = cheerio.load(response.data)
+            const title = $('#mvp-article-head .mvp-post-title').text()
+            const subtitle = $('#mvp-article-head span p').text()
+            const category = $('.mvp-post-cat .mvp-post-cat-link span').text()
+            const image = $('#mvp-content-main #mvp-post-feat-img img').attr('src')
+            const text = $('#mvp-content-main .theiaPostSlider_slides .theiaPostSlider_preloadedSlide p')
+
+            let post = []
+
+            text.each((i,el) => {
+                const text = $(el).html()
+                post.push({
+                    text: text,
+                })
+            })
+
+            res.send({
+                status: "success",
+                title: title,
+                subtitle: subtitle,
+                image: image,
+                category: category,
+                post
+            })
+
+        }).catch(err => console.error(err))
+}
+
+export { homeInfo, newsData, postData }
